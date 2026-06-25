@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dream Map — Функционал</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#07000f; color:#e0d0ff; font-family:Georgia,serif; padding:20px; }
+  h1 { text-align:center; color:#c8a0ff; font-size:22px; margin-bottom:6px; text-shadow:0 0 20px rgba(180,100,255,.7); }
+  .sub { text-align:center; color:rgba(180,130,255,.5); font-size:12px; margin-bottom:28px; }
+
+  .flow { display:flex; flex-direction:column; gap:0; max-width:500px; margin:0 auto; }
+
+  /* Блок */
+  .node {
+    background:linear-gradient(135deg,rgba(40,5,90,.95),rgba(20,0,50,.98));
+    border:1px solid rgba(160,80,255,.35);
+    border-radius:14px; padding:14px 18px;
+    position:relative; z-index:1;
+  }
+  .node .title { font-size:14px; font-weight:bold; color:#d0a8ff; margin-bottom:6px; }
+  .node .items { font-size:12px; color:rgba(200,160,255,.75); line-height:1.9; }
+  .node .cmd { color:#a87fff; font-family:monospace; font-size:11px; }
+
+  /* Стрелка */
+  .arrow {
+    display:flex; align-items:center; justify-content:center;
+    height:32px; color:rgba(160,80,255,.6); font-size:22px;
+  }
+
+  /* Ветки */
+  .branches { display:flex; gap:10px; justify-content:center; }
+  .branch {
+    flex:1; background:linear-gradient(135deg,rgba(30,3,70,.9),rgba(15,0,40,.95));
+    border:1px solid rgba(140,60,220,.3); border-radius:12px; padding:12px 14px;
+  }
+  .branch .btitle { font-size:12px; color:#c090ff; font-weight:bold; margin-bottom:6px; }
+  .branch .items  { font-size:11px; color:rgba(185,140,255,.7); line-height:1.8; }
+
+  /* Блок бесплатно/платно */
+  .plans { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .plan {
+    border-radius:10px; padding:10px 12px;
+    font-size:11px; line-height:1.8;
+  }
+  .plan.free   { background:rgba(40,40,40,.6); border:1px solid rgba(120,120,120,.3); color:rgba(200,200,200,.8); }
+  .plan.basic  { background:rgba(20,10,60,.8); border:1px solid rgba(100,50,200,.4); color:rgba(200,160,255,.9); }
+  .plan.pro    { background:rgba(10,20,70,.8); border:1px solid rgba(80,80,220,.4); color:rgba(180,180,255,.9); }
+  .plan.ultra  { background:rgba(40,0,80,.8); border:1px solid rgba(180,80,255,.5); color:#d4a8ff; }
+  .plan .pname { font-size:13px; font-weight:bold; margin-bottom:4px; }
+
+  .section-label {
+    text-align:center; font-size:11px; color:rgba(160,100,255,.5);
+    margin:4px 0; letter-spacing:1px; text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+
+<h1>🗺 Dream Map</h1>
+<div class="sub">Полная карта функций бота</div>
+
+<div class="flow">
+
+  <!-- СТАРТ -->
+  <div class="node">
+    <div class="title">🚀 Начало работы</div>
+    <div class="items">
+      <span class="cmd">/start</span> — регистрация, приветствие, онбординг<br>
+      <span class="cmd">/info</span> — все команды и инструкция<br>
+      <span class="cmd">/trial</span> — 3 дня Про бесплатно<br>
+      <span class="cmd">/tz</span> — настройка часового пояса
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- ЗАПИСЬ СНОВ -->
+  <div class="node">
+    <div class="title">🌙 Запись снов</div>
+    <div class="items">
+      <b>Утром</b> — пишешь текстом о сне (от 10 слов)<br>
+      <b>Вечером</b> — итог дня, связь с будущими снами<br>
+      После записи: оценка сна ⭐ и энергии ⚡
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- ИИ АНАЛИЗ -->
+  <div class="node">
+    <div class="title">🤖 ИИ-анализ (Nemotron 550B)</div>
+    <div class="items">
+      📝 Пересказ сна<br>
+      🌙 Ключевые образы и символы<br>
+      💭 Психологический контекст<br>
+      🎭 Эмоциональный тон<br>
+      💡 Инсайт дня
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- ПОСЛЕ АНАЛИЗА — ВЕТКИ -->
+  <div class="section-label">После анализа</div>
+  <div class="branches">
+    <div class="branch">
+      <div class="btitle">🎨 Картинка</div>
+      <div class="items">
+        Про/Ультра — бесплатно 1/день<br>
+        Бесплатный — 20 ⭐<br>
+        Pollinations AI<br>
+        → Dream Card #N<br>
+        → Галерея снов
+      </div>
+    </div>
+    <div class="branch">
+      <div class="btitle">📢 Публикация</div>
+      <div class="items">
+        /publish — в канал<br>
+        Анонимно (+1 день)<br>
+        С именем (+2 дня)<br>
+        /weekdreams<br>
+        Сон недели
+      </div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- ЛИЧНЫЙ КАБИНЕТ -->
+  <div class="node">
+    <div class="title">👤 Личный кабинет /me</div>
+    <div class="items">
+      🔥 Стрик — визуальный счётчик дней<br>
+      🏆 Ачивменты — 20 достижений<br>
+      📊 Уровни: Новичок → Сновидец → Мастер → Легенда<br>
+      📈 /analytics — график по дням недели<br>
+      📊 /report — PDF отчёт за неделю
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- ИНСТРУМЕНТЫ -->
+  <div class="section-label">Дополнительные инструменты</div>
+  <div class="branches">
+    <div class="branch">
+      <div class="btitle">📖 Сонник</div>
+      <div class="items">
+        /s символ<br>
+        47+ образов<br>
+        Психология<br>
+        Без мистики
+      </div>
+    </div>
+    <div class="branch">
+      <div class="btitle">🔍 Поиск</div>
+      <div class="items">
+        /search слово<br>
+        По архиву снов<br>
+        /gallery<br>
+        /mycards
+      </div>
+    </div>
+    <div class="branch">
+      <div class="btitle">⚙️ Настройки</div>
+      <div class="items">
+        /settings<br>
+        Пуши вкл/выкл<br>
+        /tz часовой пояс<br>
+        /mood настроение
+      </div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- АВТОПУШИ -->
+  <div class="node">
+    <div class="title">🔔 Автоматические уведомления</div>
+    <div class="items">
+      🌅 7:00 — утренний пуш (запиши сон)<br>
+      🔮 21:00 — предсказание сна на ночь<br>
+      🌆 21:00 — вечерний чекин<br>
+      ⚠️ 21:30 — предупреждение о стрике<br>
+      📢 18:00 — инвайт опубликовать сон<br>
+      📊 вс 10:00 — воскресный дайджест<br>
+      🎭 вс 19:00 — архетип недели (альтер эго)
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- ПЛАНЫ -->
+  <div class="section-label">Планы подписки</div>
+  <div class="plans">
+    <div class="plan free">
+      <div class="pname">🆓 Бесплатный</div>
+      2 анализа/день<br>
+      Базовый отчёт<br>
+      Сонник<br>
+      Картинка за 20⭐
+    </div>
+    <div class="plan basic">
+      <div class="pname">🌙 Базовый 100⭐</div>
+      10 анализов/день<br>
+      Полный отчёт<br>
+      Архив снов<br>
+      Картинка 1/день
+    </div>
+    <div class="plan pro">
+      <div class="pname">⭐ Про 150⭐</div>
+      20 анализов/день<br>
+      Анализ паттернов<br>
+      Циклы сна<br>
+      Картинка 1/день
+    </div>
+    <div class="plan ultra">
+      <div class="pname">🔮 Ультра 300⭐</div>
+      Безлимит<br>
+      Биохакинг-отчёт<br>
+      Прогноз недели<br>
+      Картинка безлимит
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <!-- СОЦИАЛЬНОЕ -->
+  <div class="node">
+    <div class="title">🤝 Социальные функции</div>
+    <div class="items">
+      🔗 <span class="cmd">/ref</span> — реферальная ссылка (+7 дней обоим)<br>
+      🎁 <span class="cmd">/gift @username</span> — подарить подписку другу<br>
+      📢 Канал @DreamMapChannel — контент каждый день<br>
+      🏆 Топ-3 сновидцев недели в канале каждое вс
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;margin-top:24px;font-size:11px;color:rgba(160,100,255,.4);">
+  ✦ Dream Map · @DreamMapsbot
+</div>
+
+</body>
+</html>
