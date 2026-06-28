@@ -1,241 +1,465 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dream Map — Функционал</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#07000f; color:#e0d0ff; font-family:Georgia,serif; padding:20px; }
-  h1 { text-align:center; color:#c8a0ff; font-size:22px; margin-bottom:6px; text-shadow:0 0 20px rgba(180,100,255,.7); }
-  .sub { text-align:center; color:rgba(180,130,255,.5); font-size:12px; margin-bottom:28px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#17212b">
+    <title>Dev Team Chat</title>
+    <style>
+        :root {
+            --bg-color: #0e1621;
+            --header-bg: #17212b;
+            --msg-in-bg: #182533;
+            --msg-out-bg: #2b5278;
+            --text-color: #ffffff;
+            --text-muted: #7f91a4;
+            --accent-color: #5288c1;
+            --border-color: #00000033;
+            --sam-color: #ff595a;
+            --alice-color: #40e0d0;
+            --user-color: #5288c1;
+        }
 
-  .flow { display:flex; flex-direction:column; gap:0; max-width:500px; margin:0 auto; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
-  /* Блок */
-  .node {
-    background:linear-gradient(135deg,rgba(40,5,90,.95),rgba(20,0,50,.98));
-    border:1px solid rgba(160,80,255,.35);
-    border-radius:14px; padding:14px 18px;
-    position:relative; z-index:1;
-  }
-  .node .title { font-size:14px; font-weight:bold; color:#d0a8ff; margin-bottom:6px; }
-  .node .items { font-size:12px; color:rgba(200,160,255,.75); line-height:1.9; }
-  .node .cmd { color:#a87fff; font-family:monospace; font-size:11px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-  /* Стрелка */
-  .arrow {
-    display:flex; align-items:center; justify-content:center;
-    height:32px; color:rgba(160,80,255,.6); font-size:22px;
-  }
+        /* Header */
+        .header {
+            background-color: var(--header-bg);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .header-info { display: flex; align-items: center; gap: 10px; }
+        .header-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #2b5278, #5288c1); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .header-text h1 { font-size: 16px; margin-bottom: 2px; }
+        .header-text span { font-size: 13px; color: var(--text-muted); }
+        .settings-btn { background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; }
 
-  /* Ветки */
-  .branches { display:flex; gap:10px; justify-content:center; }
-  .branch {
-    flex:1; background:linear-gradient(135deg,rgba(30,3,70,.9),rgba(15,0,40,.95));
-    border:1px solid rgba(140,60,220,.3); border-radius:12px; padding:12px 14px;
-  }
-  .branch .btitle { font-size:12px; color:#c090ff; font-weight:bold; margin-bottom:6px; }
-  .branch .items  { font-size:11px; color:rgba(185,140,255,.7); line-height:1.8; }
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-  /* Блок бесплатно/платно */
-  .plans { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
-  .plan {
-    border-radius:10px; padding:10px 12px;
-    font-size:11px; line-height:1.8;
-  }
-  .plan.free   { background:rgba(40,40,40,.6); border:1px solid rgba(120,120,120,.3); color:rgba(200,200,200,.8); }
-  .plan.basic  { background:rgba(20,10,60,.8); border:1px solid rgba(100,50,200,.4); color:rgba(200,160,255,.9); }
-  .plan.pro    { background:rgba(10,20,70,.8); border:1px solid rgba(80,80,220,.4); color:rgba(180,180,255,.9); }
-  .plan.ultra  { background:rgba(40,0,80,.8); border:1px solid rgba(180,80,255,.5); color:#d4a8ff; }
-  .plan .pname { font-size:13px; font-weight:bold; margin-bottom:4px; }
+        /* Messages */
+        .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
+        .message-row.out { align-self: flex-end; flex-direction: row-reverse; max-width: 75%; }
+        .message-row.in { align-self: flex-start; }
+        
+        .avatar { width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; }
+        .avatar.sam { background-color: var(--sam-color); }
+        .avatar.alice { background-color: var(--alice-color); }
+        
+        .message-bubble {
+            padding: 8px 12px;
+            border-radius: 12px;
+            position: relative;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .message-row.in .message-bubble { background-color: var(--msg-in-bg); border-bottom-left-radius: 4px; }
+        .message-row.out .message-bubble { background-color: var(--msg-out-bg); border-bottom-right-radius: 4px; }
 
-  .section-label {
-    text-align:center; font-size:11px; color:rgba(160,100,255,.5);
-    margin:4px 0; letter-spacing:1px; text-transform:uppercase;
-  }
-</style>
+        .nickname { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+        .nickname.sam { color: var(--sam-color); }
+        .nickname.alice { color: var(--alice-color); }
+
+        /* Reply Block */
+        .reply-block {
+            display: flex;
+            flex-direction: column;
+            border-left: 3px solid var(--accent-color);
+            background-color: rgba(0, 0, 0, 0.15);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .message-row.out .reply-block { border-left-color: #fff; }
+        .reply-name { font-weight: bold; color: var(--accent-color); margin-bottom: 2px; }
+        .message-row.out .reply-name { color: #fff; }
+        .reply-text-snippet { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        .message-row.out .reply-text-snippet { color: rgba(255,255,255,0.7); }
+
+        /* Input Area */
+        .input-area {
+            background-color: var(--header-bg);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-box {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: none;
+            color: var(--text-color);
+            padding: 12px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+        }
+        .send-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .send-btn svg { width: 20px; height: 20px; fill: currentColor; margin-left: 3px; }
+
+        /* Status (Typing) */
+        .typing-status {
+            font-size: 13px;
+            color: var(--accent-color);
+            padding: 0 15px 5px 15px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .typing-status.visible { opacity: 1; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal {
+            background-color: var(--header-bg);
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .modal h2 { margin-bottom: 15px; font-size: 18px; }
+        .modal input {
+            width: 100%; padding: 10px; margin-bottom: 15px;
+            background-color: var(--bg-color); border: 1px solid var(--border-color);
+            color: var(--text-color); border-radius: 6px; outline: none;
+        }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-btn {
+            padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;
+        }
+        .btn-cancel { background: transparent; color: var(--accent-color); }
+        .btn-save { background-color: var(--accent-color); color: white; }
+    </style>
 </head>
 <body>
 
-<h1>🗺 Dream Map</h1>
-<div class="sub">Полная карта функций бота</div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-info">
+            <div class="header-avatar">DT</div>
+            <div class="header-text">
+                <h1>Dev Team</h1>
+                <span>3 участника</span>
+            </div>
+        </div>
+        <button class="settings-btn" id="openSettingsBtn">⚙️</button>
+    </header>
 
-<div class="flow">
+    <!-- Chat Area -->
+    <div class="chat-container" id="chatContainer">
+        <!-- Messages will be injected here -->
+    </div>
 
-  <!-- СТАРТ -->
-  <div class="node">
-    <div class="title">🚀 Начало работы</div>
-    <div class="items">
-      <span class="cmd">/start</span> — регистрация, приветствие, онбординг<br>
-      <span class="cmd">/info</span> — все команды и инструкция<br>
-      <span class="cmd">/trial</span> — 3 дня Про бесплатно<br>
-      <span class="cmd">/tz</span> — настройка часового пояса
-    </div>
-  </div>
-  <div class="arrow">↓</div>
+    <!-- Typing Indicator -->
+    <div class="typing-status" id="typingStatus">Sam печатает...</div>
 
-  <!-- ЗАПИСЬ СНОВ -->
-  <div class="node">
-    <div class="title">🌙 Запись снов</div>
-    <div class="items">
-      <b>Утром</b> — пишешь текстом о сне (от 10 слов)<br>
-      <b>Вечером</b> — итог дня, связь с будущими снами<br>
-      После записи: оценка сна ⭐ и энергии ⚡
+    <!-- Input Area -->
+    <div class="input-area">
+        <input type="text" id="messageInput" class="input-box" placeholder="Сообщение..." autocomplete="off">
+        <button class="send-btn" id="sendBtn">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+        </button>
     </div>
-  </div>
-  <div class="arrow">↓</div>
 
-  <!-- ИИ АНАЛИЗ -->
-  <div class="node">
-    <div class="title">🤖 ИИ-анализ (Nemotron 550B)</div>
-    <div class="items">
-      📝 Пересказ сна<br>
-      🌙 Ключевые образы и символы<br>
-      💭 Психологический контекст<br>
-      🎭 Эмоциональный тон<br>
-      💡 Инсайт дня
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <h2>Настройки API</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Введите ваш ключ OpenRouter API</p>
+            <input type="password" id="apiKeyInput" placeholder="sk-or-v1-...">
+            <div class="modal-buttons">
+                <button class="modal-btn btn-cancel" id="closeSettingsBtn">Отмена</button>
+                <button class="modal-btn btn-save" id="saveSettingsBtn">Сохранить</button>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="arrow">↓</div>
 
-  <!-- ПОСЛЕ АНАЛИЗА — ВЕТКИ -->
-  <div class="section-label">После анализа</div>
-  <div class="branches">
-    <div class="branch">
-      <div class="btitle">🎨 Картинка</div>
-      <div class="items">
-        Про/Ультра — бесплатно 1/день<br>
-        Бесплатный — 20 ⭐<br>
-        Pollinations AI<br>
-        → Dream Card #N<br>
-        → Галерея снов
-      </div>
-    </div>
-    <div class="branch">
-      <div class="btitle">📢 Публикация</div>
-      <div class="items">
-        /publish — в канал<br>
-        Анонимно (+1 день)<br>
-        С именем (+2 дня)<br>
-        /weekdreams<br>
-        Сон недели
-      </div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
+    <script>
+        // --- State Management ---
+        const state = {
+            apiKey: localStorage.getItem('openRouterApiKey') || '',
+            messages: JSON.parse(localStorage.getItem('chatHistory')) || []
+        };
 
-  <!-- ЛИЧНЫЙ КАБИНЕТ -->
-  <div class="node">
-    <div class="title">👤 Личный кабинет /me</div>
-    <div class="items">
-      🔥 Стрик — визуальный счётчик дней<br>
-      🏆 Ачивменты — 20 достижений<br>
-      📊 Уровни: Новичок → Сновидец → Мастер → Легенда<br>
-      📈 /analytics — график по дням недели<br>
-      📊 /report — PDF отчёт за неделю
-    </div>
-  </div>
-  <div class="arrow">↓</div>
+        // --- Agents Prompts ---
+        const agents = {
+            sam: {
+                name: "Sam",
+                role: "backend",
+                color: "sam",
+                prompt: "Ты Sam, суровый, прагматичный и технически подкованный backend-разработчик. Отвечай кратко, по делу, используй технический жаргон. Ты находишься в групповом чате с Пользователем и Alice (frontend-разработчица). Всегда держи свой образ. Общайся на русском."
+            },
+            alice: {
+                name: "Alice",
+                role: "frontend",
+                color: "alice",
+                prompt: "Ты Alice, позитивная, креативная frontend-разработчица. Ты заботишься о UI/UX, анимациях и пользователях. Ты любишь эмодзи. Ты находишься в групповом чате с Пользователем и Sam (backend-разработчик). Иногда подкалывай Sam'а за его любовь к суровому коду. Общайся на русском."
+            }
+        };
 
-  <!-- ИНСТРУМЕНТЫ -->
-  <div class="section-label">Дополнительные инструменты</div>
-  <div class="branches">
-    <div class="branch">
-      <div class="btitle">📖 Сонник</div>
-      <div class="items">
-        /s символ<br>
-        47+ образов<br>
-        Психология<br>
-        Без мистики
-      </div>
-    </div>
-    <div class="branch">
-      <div class="btitle">🔍 Поиск</div>
-      <div class="items">
-        /search слово<br>
-        По архиву снов<br>
-        /gallery<br>
-        /mycards
-      </div>
-    </div>
-    <div class="branch">
-      <div class="btitle">⚙️ Настройки</div>
-      <div class="items">
-        /settings<br>
-        Пуши вкл/выкл<br>
-        /tz часовой пояс<br>
-        /mood настроение
-      </div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
+        // --- DOM Elements ---
+        const UI = {
+            chatContainer: document.getElementById('chatContainer'),
+            messageInput: document.getElementById('messageInput'),
+            sendBtn: document.getElementById('sendBtn'),
+            typingStatus: document.getElementById('typingStatus'),
+            settingsModal: document.getElementById('settingsModal'),
+            openSettingsBtn: document.getElementById('openSettingsBtn'),
+            closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+            saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+            apiKeyInput: document.getElementById('apiKeyInput')
+        };
 
-  <!-- АВТОПУШИ -->
-  <div class="node">
-    <div class="title">🔔 Автоматические уведомления</div>
-    <div class="items">
-      🌅 7:00 — утренний пуш (запиши сон)<br>
-      🔮 21:00 — предсказание сна на ночь<br>
-      🌆 21:00 — вечерний чекин<br>
-      ⚠️ 21:30 — предупреждение о стрике<br>
-      📢 18:00 — инвайт опубликовать сон<br>
-      📊 вс 10:00 — воскресный дайджест<br>
-      🎭 вс 19:00 — архетип недели (альтер эго)
-    </div>
-  </div>
-  <div class="arrow">↓</div>
+        // --- Initialization ---
+        function init() {
+            renderChat();
+            if (!state.apiKey) openModal();
+        }
 
-  <!-- ПЛАНЫ -->
-  <div class="section-label">Планы подписки</div>
-  <div class="plans">
-    <div class="plan free">
-      <div class="pname">🆓 Бесплатный</div>
-      2 анализа/день<br>
-      Базовый отчёт<br>
-      Сонник<br>
-      Картинка за 20⭐
-    </div>
-    <div class="plan basic">
-      <div class="pname">🌙 Базовый 100⭐</div>
-      10 анализов/день<br>
-      Полный отчёт<br>
-      Архив снов<br>
-      Картинка 1/день
-    </div>
-    <div class="plan pro">
-      <div class="pname">⭐ Про 150⭐</div>
-      20 анализов/день<br>
-      Анализ паттернов<br>
-      Циклы сна<br>
-      Картинка 1/день
-    </div>
-    <div class="plan ultra">
-      <div class="pname">🔮 Ультра 300⭐</div>
-      Безлимит<br>
-      Биохакинг-отчёт<br>
-      Прогноз недели<br>
-      Картинка безлимит
-    </div>
-  </div>
-  <div class="arrow">↓</div>
+        // --- Modal Logic ---
+        function openModal() {
+            UI.apiKeyInput.value = state.apiKey;
+            UI.settingsModal.classList.add('active');
+        }
+        function closeModal() { UI.settingsModal.classList.remove('active'); }
+        
+        UI.openSettingsBtn.addEventListener('click', openModal);
+        UI.closeSettingsBtn.addEventListener('click', closeModal);
+        UI.saveSettingsBtn.addEventListener('click', () => {
+            state.apiKey = UI.apiKeyInput.value.trim();
+            localStorage.setItem('openRouterApiKey', state.apiKey);
+            closeModal();
+        });
 
-  <!-- СОЦИАЛЬНОЕ -->
-  <div class="node">
-    <div class="title">🤝 Социальные функции</div>
-    <div class="items">
-      🔗 <span class="cmd">/ref</span> — реферальная ссылка (+7 дней обоим)<br>
-      🎁 <span class="cmd">/gift @username</span> — подарить подписку другу<br>
-      📢 Канал @DreamMapChannel — контент каждый день<br>
-      🏆 Топ-3 сновидцев недели в канале каждое вс
-    </div>
-  </div>
+        // --- Chat UI Logic ---
+        function saveMessages() {
+            localStorage.setItem('chatHistory', JSON.stringify(state.messages));
+        }
 
-</div>
+        function scrollToBottom() {
+            UI.chatContainer.scrollTop = UI.chatContainer.scrollHeight;
+        }
 
-<div style="text-align:center;margin-top:24px;font-size:11px;color:rgba(160,100,255,.4);">
-  ✦ Dream Map · @DreamMapsbot
-</div>
+        function renderChat() {
+            UI.chatContainer.innerHTML = '';
+            state.messages.forEach(msg => appendMessageUI(msg));
+            scrollToBottom();
+        }
 
+        function appendMessageUI(msg) {
+            const isOut = msg.sender === 'user';
+            const row = document.createElement('div');
+            row.className = `message-row ${isOut ? 'out' : 'in'}`;
+
+            // Avatar for incoming messages
+            let avatarHtml = '';
+            if (!isOut) {
+                const initial = msg.sender === 'sam' ? 'S' : 'A';
+                avatarHtml = `<div class="avatar ${msg.sender}">${initial}</div>`;
+            }
+
+            // Reply Block HTML
+            let replyHtml = '';
+            if (msg.replyToId) {
+                const replyMsg = state.messages.find(m => m.id === msg.replyToId);
+                if (replyMsg) {
+                    const replyName = replyMsg.sender === 'user' ? 'Вы' : (replyMsg.sender === 'sam' ? 'Sam' : 'Alice');
+                    replyHtml = `
+                        <div class="reply-block">
+                            <div class="reply-name">${replyName}</div>
+                            <div class="reply-text-snippet">${replyMsg.text}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Nickname HTML
+            let nicknameHtml = '';
+            if (!isOut) {
+                const name = msg.sender === 'sam' ? 'Sam' : 'Alice';
+                nicknameHtml = `<div class="nickname ${msg.sender}">${name}</div>`;
+            }
+
+            row.innerHTML = `
+                ${avatarHtml}
+                <div class="message-bubble">
+                    ${nicknameHtml}
+                    ${replyHtml}
+                    <div class="message-text">${msg.text}</div>
+                </div>
+            `;
+            UI.chatContainer.appendChild(row);
+        }
+
+        function addMessage(sender, text, replyToId = null) {
+            const msg = {
+                id: Date.now().toString() + Math.floor(Math.random()*1000),
+                sender,
+                text,
+                replyToId
+            };
+            state.messages.push(msg);
+            saveMessages();
+            appendMessageUI(msg);
+            scrollToBottom();
+            return msg.id;
+        }
+
+        // --- Interaction Logic ---
+        UI.sendBtn.addEventListener('click', handleUserSend);
+        UI.messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserSend();
+        });
+
+        async function handleUserSend() {
+            const text = UI.messageInput.value.trim();
+            if (!text) return;
+            if (!state.apiKey) {
+                alert("Пожалуйста, укажите OpenRouter API ключ в настройках!");
+                openModal();
+                return;
+            }
+
+            UI.messageInput.value = '';
+            const userMsgId = addMessage('user', text);
+            
+            // Запускаем цепочку ответов агентов
+            runAgentsCycle(userMsgId);
+        }
+
+        function setTypingStatus(name) {
+            if (name) {
+                UI.typingStatus.textContent = `${name} печатает...`;
+                UI.typingStatus.classList.add('visible');
+            } else {
+                UI.typingStatus.classList.remove('visible');
+            }
+        }
+
+        // --- AI API Integration ---
+        async function fetchAgentResponse(agentKey, replyToId) {
+            const agent = agents[agentKey];
+            setTypingStatus(agent.name);
+
+            // Формируем историю для контекста
+            const apiMessages = [
+                { role: "system", content: agent.prompt }
+            ];
+
+            // Берем последние 10 сообщений для контекста
+            const recentMessages = state.messages.slice(-10);
+            recentMessages.forEach(m => {
+                const role = m.sender === agentKey ? "assistant" : "user";
+                let content = m.text;
+                // Для "user" указываем кто именно это сказал (Пользователь или другой агент)
+                if (role === "user") {
+                    const speaker = m.sender === 'user' ? 'User' : agents[m.sender].name;
+                    content = `[${speaker}]: ${m.text}`;
+                }
+                apiMessages.push({ role, content });
+            });
+
+            // Добавляем инструкцию на кого конкретно нужно ответить сейчас
+            const targetMsg = state.messages.find(m => m.id === replyToId);
+            if (targetMsg) {
+                const targetName = targetMsg.sender === 'user' ? 'Пользователь' : agents[targetMsg.sender].name;
+                apiMessages.push({ 
+                    role: "system", 
+                    content: `Сейчас твоя очередь отвечать. Сделай прямой ответ (реплай) на это сообщение от ${targetName}: "${targetMsg.text}"` 
+                });
+            }
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${state.apiKey}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.href,
+                        "X-Title": "PWA Dev Team Chat"
+                    },
+                    body: JSON.stringify({
+                        model: "google/gemini-2.5-flash",
+                        messages: apiMessages
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error(error);
+                return `[Ошибка сети/API: ${error.message}]. Проверьте ключ.`;
+            }
+        }
+
+        async function runAgentsCycle(userMsgId) {
+            // Агент 1 (Sam) отвечает пользователю
+            const samResponse = await fetchAgentResponse('sam', userMsgId);
+            const samMsgId = addMessage('sam', samResponse, userMsgId);
+
+            // Небольшая задержка для реалистичности
+            setTypingStatus(null);
+            await new Promise(r => setTimeout(r, 800));
+
+            // Агент 2 (Alice) отвечает Сэму (или пользователю, но по логике она реагирует на Сэма)
+            const aliceResponse = await fetchAgentResponse('alice', samMsgId);
+            addMessage('alice', aliceResponse, samMsgId);
+
+            setTypingStatus(null);
+        }
+
+        // Start
+        init();
+    </script>
 </body>
 </html>
