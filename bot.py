@@ -1,6 +1,4 @@
-import sqlite3
 import logging
-from datetime import datetime
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import (
     Message, CallbackQuery, InlineKeyboardMarkup, 
@@ -17,7 +15,6 @@ ADMIN_ID = 8196658213  # Твой UID
 
 WEB_APP_URL = "https://example.com/index.html" # Замени на реальную HTTPS ссылку!
 PRICE_XTR = 100  
-DB_NAME = "vylazka_users.db"
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
@@ -26,47 +23,10 @@ dp = Dispatcher()
 class AuthForm(StatesGroup):
     waiting_for_api = State()
 
-
-# ==================== БАЗА ДАННЫХ ====================
-def db_init():
-    with sqlite3.connect(DB_NAME) as db:
-        db.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
-                username TEXT,
-                full_name TEXT,
-                api_key TEXT,
-                has_access INTEGER DEFAULT 0,
-                joined_at TEXT
-            )
-        """)
-        try: db.execute("ALTER TABLE users ADD COLUMN api_key TEXT")
-        except sqlite3.OperationalError: pass
-        db.commit()
-
-def get_user_data(user_id: int):
-    with sqlite3.connect(DB_NAME) as db:
-        cur = db.execute("SELECT api_key, has_access FROM users WHERE user_id = ?", (user_id,))
-        return cur.fetchone()
-
-def register_user(u):
-    with sqlite3.connect(DB_NAME) as db:
-        db.execute("""
-            INSERT OR IGNORE INTO users (user_id, username, full_name, api_key, has_access, joined_at)
-            VALUES (?, ?, ?, NULL, 0, ?)
-        """, (u.id, u.username, u.full_name, datetime.now().isoformat()))
-        db.commit()
-
-def save_user_api(user_id: int, api_key: str):
-    with sqlite3.connect(DB_NAME) as db:
-        db.execute("UPDATE users SET api_key = ?, has_access = 1 WHERE user_id = ?", (api_key, user_id))
-        db.commit()
-
-def get_stats():
-    with sqlite3.connect(DB_NAME) as db:
-        total = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-        active = db.execute("SELECT COUNT(*) FROM users WHERE has_access = 1").fetchone()[0]
-        return total, active
+# ==================== IN-MEMORY ХРАНИЛИЩЕ ====================
+# Внимание: при перезапуске скрипта эти данные будут сбрасываться!
+authorized_users = {}  # Словарь формата {user_id: api_key}
+all_users = set()      # Множество для подсчета статистики нажатий /start
 
 
 # ==================== КЛАВИАТУРЫ ====================
@@ -109,21 +69,23 @@ TEXT_ABOUT = """
 
 
 # ==================== ХЭНДЛЕРЫ ====================
-
 @dp.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
     await state.clear()
-    register_user(message.from_user)
+    all_users.add(message.from_user.id)
     
+    # Если это админ
     if message.from_user.id == ADMIN_ID:
-        save_user_api(ADMIN_ID, OPENROUTER_API_KEY)
+        authorized_users[ADMIN_ID] = OPENROUTER_API_KEY
         await message.answer("👑 **Авторизация создателя подтверждена.**", reply_markup=kb_play(OPENROUTER_API_KEY))
         return
 
-    data = get_user_data(message.from_user.id)
-    if data and data[1] == 1 and data[0]:
-        await message.answer("📡 **Связь с объектом восстановлена.** Они ждут.", reply_markup=kb_play(data[0]))
+    # Если пользователь уже имеет ключ (ввел свой или оплатил)
+    if message.from_user.id in authorized_users:
+        user_key = authorized_users[message.from_user.id]
+        await message.answer("📡 **Связь с объектом восстановлена.** Они ждут.", reply_markup=kb_play(user_key))
     else:
+        # Новый пользователь
         await message.answer(TEXT_INTRO, parse_mode="Markdown", reply_markup=kb_auth())
 
 
@@ -159,7 +121,7 @@ async def process_api(message: Message, state: FSMContext):
         await message.answer("⚠️ Неверный формат ключа. Он должен начинаться на `sk-or-v1-...`\nПопробуйте еще раз или нажмите /start")
         return
         
-    save_user_api(message.from_user.id, key)
+    authorized_users[message.from_user.id] = key
     await state.clear()
     await message.answer("✅ **ШЛЮЗ НАСТРОЕН.** Канал связи открыт.", parse_mode="Markdown", reply_markup=kb_play(key))
 
@@ -185,7 +147,7 @@ async def pre_checkout(query: PreCheckoutQuery):
 @dp.message(F.successful_payment)
 async def on_pay_success(message: Message):
     master = OPENROUTER_API_KEY
-    save_user_api(message.from_user.id, master)
+    authorized_users[message.from_user.id] = master
     
     await message.answer(
         f"🔓 **ОПЛАТА ПОЛУЧЕНА. ДОСТУП РАЗРЕШЕН.**\n\n"
@@ -201,21 +163,23 @@ async def on_pay_success(message: Message):
 @dp.message(Command("stats"))
 async def adm_stats(m: Message):
     if m.from_user.id != ADMIN_ID: return
-    tot, act = get_stats()
-    await m.answer(f"📊 **База Бункера:**\nВсего нажавших /start: `{tot}`\nС готовым ключом: `{act}`", parse_mode="Markdown")
+    tot = len(all_users)
+    act = len(authorized_users)
+    await m.answer(f"📊 **База Бункера (In-Memory):**\nВсего нажавших /start: `{tot}`\nС готовым ключом: `{act}`", parse_mode="Markdown")
 
 @dp.message(Command("give"))
 async def adm_give(m: Message):
     if m.from_user.id != ADMIN_ID: return
     try:
         tid = int(m.text.split()[1])
-        save_user_api(tid, OPENROUTER_API_KEY)
+        authorized_users[tid] = OPENROUTER_API_KEY
         await m.answer(f"✅ Юзеру `{tid}` прописан системный ключ.")
-    except: await m.answer("Формат: `/give 123456789`")
+    except: 
+        await m.answer("Формат: `/give 123456789`")
+
 
 async def main():
-    db_init()
-    logging.info("Бот запущен...")
+    logging.info("Бот запущен в режиме IN-MEMORY (БД отключена)...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
