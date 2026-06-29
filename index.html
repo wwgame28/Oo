@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Вылазка 2026 - Кинематографичная Версия (v4)</title>
+    <title>Вылазка 2026 - Telegram Edition</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #121214;
-            color: #e1e1e6;
+            background-color: #000000;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,258 +28,330 @@
             width: 100%;
             max-width: 480px;
             height: 100vh;
-            background-color: #1a1a1e;
+            background-color: #0e1621; /* Классический темный фон ТГ */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.03"><path d="M0 0h100v100H0z" fill="%23ffffff"/><path d="M10 10h10v10H10zM30 30h10v10H30z" fill="%23000000"/></svg>');
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* Шапка чата */
+        /* Шапка чата Telegram */
         .chat-header {
-            background-color: #202024;
-            padding: 15px;
+            background-color: #17212b;
+            padding: 8px 15px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid #29292e;
             z-index: 10;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            height: 56px;
+        }
+
+        .back-btn {
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #5eb5f7;
         }
 
         .avatar-group {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, #ff4757, #3742fa);
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e53935, #ab47bc);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 18px;
+            color: white;
             margin-right: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .chat-info {
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .chat-title {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 500;
             color: #ffffff;
-            margin-bottom: 2px;
+            line-height: 1.2;
         }
 
         .chat-status {
-            font-size: 12px;
-            color: #00ff88;
-            font-weight: 500;
+            font-size: 13px;
+            color: #7f91a4;
+            line-height: 1.2;
+            margin-top: 2px;
         }
 
-        /* Окно сообщений */
+        /* Зона чата */
         .chat-messages {
             flex-grow: 1;
-            padding: 20px 15px;
+            padding: 15px 10px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            background-image: radial-gradient(#29292e 1px, transparent 1px);
-            background-size: 16px 16px;
+            gap: 4px; /* Маленький отступ как в ТГ */
         }
 
-        .message {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 16px;
-            font-size: 15px;
-            line-height: 1.4;
-            position: relative;
-            animation: fadeIn 0.3s ease-out;
+        /* Обертка для сообщения с аватаркой */
+        .message-wrapper {
+            display: flex;
+            width: 100%;
+            margin-bottom: 6px;
+            align-items: flex-end; /* Аватарка внизу */
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .message-wrapper.incoming {
+            justify-content: flex-start;
         }
 
-        .message.npc {
-            background-color: #29292e;
-            align-self: flex-start;
-            border-top-left-radius: 4px;
+        .message-wrapper.outgoing {
+            justify-content: flex-end;
         }
 
-        .message .sender-name {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        /* Повествование автора (Слова автора) */
-        .message.author-narration {
-            max-width: 95%;
-            background-color: rgba(255, 165, 0, 0.08);
-            border-left: 3px solid #ff9f43;
-            border-radius: 4px 12px 12px 4px;
-            align-self: center;
-            color: #ff9f43;
-            font-style: italic;
-            font-size: 14px;
-            text-align: center;
-            padding: 12px;
-            margin: 8px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        /* Цвета участников */
-        .sender-max { color: #ff4757; }
-        .sender-anya { color: #dda15e; }
-        .sender-kris { color: #2ed573; }
-        .sender-vlad { color: #00d2d3; }
-        .sender-marina { color: #1dd1a1; }
-        .sender-danya { color: #ff9f43; }
-        .sender-system { color: #54a0ff; font-style: italic; }
-
-        .message.player {
-            background: linear-gradient(135deg, #007acc, #005999);
-            color: #ffffff;
-            align-self: flex-end;
-            border-top-right-radius: 4px;
-        }
-
-        .message .time {
-            font-size: 10px;
-            color: #7c7c8a;
-            text-align: right;
-            margin-top: 4px;
-            display: block;
-        }
-        .message.player .time {
-            color: #a3d8ff;
-        }
-
-        /* Индикатор работы цепочки */
-        .typing-indicator {
-            align-self: flex-start;
-            background-color: #202024;
-            padding: 8px 14px;
-            border-radius: 14px;
-            font-size: 12px;
-            color: #a0a0b0;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            border: 1px dashed #3a3a42;
-        }
-
-        .dots { display: flex; gap: 3px; }
-        .dot {
-            width: 6px; height: 6px;
-            background-color: #ff9f43;
+        /* Аватарки пользователей */
+        .user-avatar {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+
+        /* Сами пузыри сообщений */
+        .message {
+            max-width: 75%;
+            padding: 6px 10px 8px 12px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.3;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        /* Входящее (НПС) */
+        .message.incoming {
+            background-color: #182533;
+            color: #ffffff;
+            border-bottom-left-radius: 4px; /* Острый угол внизу слева */
+        }
+
+        /* Хвостик входящего */
+        .message-wrapper.incoming .message::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -6px;
+            width: 12px;
+            height: 12px;
+            background-color: #182533;
+            border-bottom-right-radius: 10px;
+            z-index: -1;
+        }
+
+        /* Исходящее (Игрок) */
+        .message.outgoing {
+            background-color: #2b5278;
+            color: #ffffff;
+            border-bottom-right-radius: 4px; /* Острый угол внизу справа */
+        }
+
+        /* Хвостик исходящего */
+        .message-wrapper.outgoing .message::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -6px;
+            width: 12px;
+            height: 12px;
+            background-color: #2b5278;
+            border-bottom-left-radius: 10px;
+            z-index: -1;
+        }
+
+        .sender-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        .message-text {
+            display: inline;
+        }
+
+        /* Блок времени справа внизу */
+        .time-wrapper {
+            float: right;
+            margin: 6px -4px -4px 10px;
+            font-size: 11px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .message.incoming .time-wrapper {
+            color: #687c8f;
+        }
+
+        .message.outgoing .time-wrapper {
+            color: #7aa3c6;
+        }
+
+        /* Галочки прочтения */
+        .checks {
+            width: 16px;
+            height: 16px;
+            fill: #5eb5f7;
+        }
+
+        /* Системное сообщение (Слова автора) */
+        .message-wrapper.system {
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .message.system {
+            background-color: rgba(0, 0, 0, 0.25);
+            color: #ffffff;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 14px;
+            text-align: center;
+            max-width: 90%;
+            font-style: normal;
+        }
+
+        /* Индикатор набора текста (Анимация ТГ) */
+        .typing-indicator {
+            display: none; /* скрыт по умолчанию */
+            padding: 8px 12px;
+            align-items: flex-end;
+            margin-bottom: 6px;
+        }
+        .typing-avatar {
+            width: 36px; height: 36px; border-radius: 50%; background: #182533; margin-right: 8px;
+        }
+        .typing-bubble {
+            background-color: #182533;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            height: 36px;
+        }
+        .dot {
+            width: 6px; height: 6px; background-color: #7f91a4; border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
         }
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1.0); }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
-        /* Панель ввода */
+        /* Панель ввода Telegram */
         .chat-input-area {
-            background-color: #202024;
-            padding: 12px;
+            background-color: #17212b;
+            padding: 8px 10px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .clip-icon {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .clip-icon svg { width: 24px; height: 24px; fill: #7f91a4; }
+
+        .chat-input-wrapper {
+            flex-grow: 1;
+            background-color: #17212b;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            border-top: 1px solid #29292e;
         }
 
         .chat-input {
-            flex-grow: 1;
-            background-color: #121214;
-            border: 1px solid #29292e;
-            border-radius: 24px;
-            padding: 10px 16px;
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            padding: 12px 0;
             color: #ffffff;
-            font-size: 15px;
+            font-size: 16px;
             outline: none;
+            max-height: 100px;
         }
+        .chat-input::placeholder { color: #7f91a4; }
 
         .send-btn {
-            background-color: #007acc;
-            color: white;
+            background-color: transparent;
             border: none;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 8px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        .send-btn svg { width: 30px; height: 30px; fill: #5eb5f7; }
 
         /* Модальные окна */
         .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 18, 20, 0.96);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 30px;
-            text-align: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0e1621; z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; padding: 30px;
         }
-        
-        .modal-overlay h2 { margin-bottom: 15px; font-size: 22px; color: #ff9f43; }
-        .modal-overlay p { font-size: 14px; color: #a0a0b0; margin-bottom: 20px; line-height: 1.5; }
+        .modal-overlay h2 { margin-bottom: 15px; font-size: 22px; color: #ffffff; text-align: center; }
+        .modal-overlay p { font-size: 14px; color: #7f91a4; margin-bottom: 20px; text-align: center; }
         .modal-overlay input {
-            background-color: #1a1a1e;
-            border: 1px solid #29292e;
-            padding: 12px; border-radius: 8px;
-            color: white; margin-bottom: 15px; outline: none;
+            background-color: #17212b; border: 1px solid #2b5278; padding: 14px; border-radius: 8px;
+            color: white; margin-bottom: 15px; outline: none; font-size: 16px; text-align: center;
         }
         .modal-overlay button {
-            background-color: #ff9f43;
-            color: #121214;
-            border: none; padding: 12px;
-            border-radius: 8px; font-weight: bold; cursor: pointer;
+            background-color: #5eb5f7; color: #ffffff; border: none; padding: 14px;
+            border-radius: 8px; font-weight: 500; font-size: 16px; cursor: pointer; text-transform: uppercase;
         }
-
-        /* Экран финала */
-        .final-screen {
-            background: linear-gradient(180deg, #0f0f12 0%, #201a15 100%);
-            color: #ffffff;
-        }
-        .final-screen h1 { font-size: 28px; color: #ff4757; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;}
-        .final-desc { font-size: 15px; color: #e1e1e6; line-height: 1.6; margin-bottom: 30px; font-style: italic; padding: 0 10px; }
-        .restart-btn { background-color: #2ed573 !important; color: white !important; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- Окно ввода API ключа -->
-    <div class="modal-overlay" id="key-modal" style="display: none;">
-        <h2>Режиссерский Пульт v4</h2>
-        <p>Введите ваш OpenRouter API Key. В этой версии ИИ генерирует не только сообщения персонажей, но и <b>Слова автора (Повествование)</b> происходящего вокруг, ведя сюжет к одному из непредсказуемых финалов.</p>
-        <input type="password" id="api-key-input" placeholder="Вставьте ваш OpenRouter API Key (sk-or-...)">
-        <button id="save-key-btn">Запустить производство</button>
-    </div>
-
-    <!-- Экран Финала игры (Изначально скрыт) -->
-    <div class="modal-overlay final-screen" id="final-modal" style="display: none;">
-        <h1 id="final-title">КОНЕЦ ИСТОРИИ</h1>
-        <p class="final-desc" id="final-text">Здесь будет финальное слово автора...</p>
-        <button class="restart-btn" onclick="restartGame()">Начать заново</button>
+    <!-- Окно ввода Имени Игрока -->
+    <div class="modal-overlay" id="name-modal">
+        <h2>Вход в чат</h2>
+        <p>Введите ваше имя. Друзья из чата будут обращаться к вам именно так.</p>
+        <input type="text" id="player-name-input" placeholder="Имя или никнейм..." autocomplete="off">
+        <button id="start-game-btn">Присоединиться</button>
     </div>
 
     <!-- Шапка чата -->
     <div class="chat-header">
-        <div class="avatar-group">🎬</div>
+        <div class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+        <div class="avatar-group">В</div>
         <div class="chat-info">
             <div class="chat-title">Флудичка (14 участников)</div>
             <div class="chat-status" id="chat-status">11 человек онлайн</div>
@@ -287,20 +361,27 @@
     <!-- Чат-зона -->
     <div class="chat-messages" id="chat-messages">
         <!-- Вводное слово автора -->
-        <div class="message author-narration">
-            Вы подключились к старому закрытому чату ваших друзей «Вылазка 2026». Пару часов назад они ушли исследовать заброшенный подземный бункер на окраине города. За окном глухая ночь. Вдруг телефон начинает разрываться от уведомлений...
+        <div class="message-wrapper system">
+            <div class="message system">
+                Вы подключились к старому закрытому чату. Пару часов назад друзья ушли в заброшенный бункер. Вдруг телефон начинает разрываться...
+            </div>
         </div>
-        <div class="message npc">
-            <span class="sender-name sender-max">Макс</span>
-            Ребята, вы тут? Кажется, у нас проблемы... Кто-нибудь видит свет в заброшке?
-            <span class="time">01:30</span>
+        
+        <!-- Стартовое сообщение от Макса -->
+        <div class="message-wrapper incoming">
+            <div class="user-avatar" style="background-color: #e57373;">М</div>
+            <div class="message incoming">
+                <span class="sender-name" style="color: #e57373;">Макс</span>
+                <div class="message-text">Ребята, вы тут? Кажется, у нас проблемы... Кто-нибудь видит свет в заброшке?</div>
+                <div class="time-wrapper">01:30</div>
+            </div>
         </div>
     </div>
 
-    <!-- Индикатор печатных цепей режиссеров -->
-    <div class="typing-indicator" id="typing-indicator">
-        <span id="typing-text">Режиссер планирует...</span>
-        <div class="dots">
+    <!-- Индикатор печати -->
+    <div class="message-wrapper incoming typing-indicator" id="typing-indicator">
+        <div class="typing-avatar"></div>
+        <div class="typing-bubble">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
@@ -309,97 +390,61 @@
 
     <!-- Зона ввода -->
     <div class="chat-input-area">
-        <input type="text" class="chat-input" id="chat-input" placeholder="Написать сообщение..." autocomplete="off">
+        <div class="clip-icon">
+            <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+        </div>
+        <div class="chat-input-wrapper">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Сообщение..." autocomplete="off">
+        </div>
         <button class="send-btn" id="send-btn">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
-                <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
     </div>
 </div>
 
 <script>
+    // =========================================================================
+    // ВАЖНО: ВСТАВЬТЕ ВАШ API КЛЮЧ СЮДА!
+    // =========================================================================
+    const OPENROUTER_API_KEY = "СЮДА_ВСТАВЬТЕ_ВАШ_КЛЮЧ"; 
+    // =========================================================================
+
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
     const typingIndicator = document.getElementById('typing-indicator');
-    const typingText = document.getElementById('typing-text');
-    const keyModal = document.getElementById('key-modal');
-    const apiKeyInput = document.getElementById('api-key-input');
-    const saveKeyBtn = document.getElementById('save-key-btn');
-    const finalModal = document.getElementById('final-modal');
-    const finalTitle = document.getElementById('final-title');
-    const finalText = document.getElementById('final-text');
+    
+    const nameModal = document.getElementById('name-modal');
+    const nameInput = document.getElementById('player-name-input');
+    const startBtn = document.getElementById('start-game-btn');
 
-    let OPENROUTER_API_KEY = localStorage.getItem('openrouter_chat_key') || "";
-    let turnCount = 0; // Считаем ходы игрока для приближения финала
+    let turnCount = 0; 
+    let playerName = "Игрок"; 
 
-    if (!OPENROUTER_API_KEY) { keyModal.style.display = 'flex'; }
+    // Генератор цветов для аватарок как в Telegram
+    const avatarColors = ['#e57373', '#f06292', '#ba68c8', '#9575cd', '#7986cb', '#64b5f6', '#4fc3f7', '#4dd0e1', '#4db6ac', '#81c784', '#ffb74d', '#ff8a65'];
+    function getColorForName(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return avatarColors[Math.abs(hash) % avatarColors.length];
+    }
 
-    saveKeyBtn.addEventListener('click', () => {
-        const key = apiKeyInput.value.trim();
-        if (key) {
-            localStorage.setItem('openrouter_chat_key', key);
-            OPENROUTER_API_KEY = key;
-            keyModal.style.display = 'none';
+    startBtn.addEventListener('click', () => {
+        const enteredName = nameInput.value.trim();
+        if (enteredName) playerName = enteredName;
+        nameModal.style.display = 'none';
+        
+        if (OPENROUTER_API_KEY === "СЮДА_ВСТАВЬТЕ_ВАШ_КЛЮЧ" || OPENROUTER_API_KEY === "") {
+            alert("ВНИМАНИЕ: Вы забыли вставить API ключ в код (строка 309).");
         }
     });
 
-    // ТРИ ОБНОВЛЕННЫХ ПРОМПТА С УЧЕТОМ СЛОВ АВТОРА И ФИНАЛА
-    const PROMPT_DIRECTOR_1 = `
-    Ты — Режиссер №1 (Мастер Сюжета). Твоя задача — вести интерактивный триллер в стиле Елены Райтман.
-    В чате 14 друзей, они в страшной заброшке. Текущий шаг игры: ${turnCount} из 10.
-    
-    Твои фазы сюжета:
-    - Шаги 1-4: Нагнетание страха, странные звуки, споры.
-    - Шаги 5-8: Кульминация, прямая угроза персонажам (что-то их преследует, они разделяются, находят жуткие вещи).
-    - Шаги 9-10: Неминуемый ФИНАЛ. Ты обязан довести историю до логического завершения (спасение, побег, или исчезновение связи навсегда).
-
-    Ты должен определить:
-    1. Что физически происходит вокруг героев (Слова автора / Повествование). Оно должно описывать звуки, темноту, действия монстра или окружения.
-    2. План реплик персонажей.
-
-    Выведи ответ СТРОГО в формате JSON:
-    { 
-      "author_narration": "описание происходящего физического действия от лица автора (например: 'Внезапно в бункере захлопывается железная дверь, отрезая Макса от остальных...')",
-      "plot_directive": "инструкция для диалогов" 
-    }
-    `;
-
-    const PROMPT_DIRECTOR_2 = `
-    Ты — Режиссер №2 (Черновик Диалогов). Возьми Сюжетную Директиву и Слова Автора от Режиссера №1 и преврати их в реплики 1-3 персонажей чата.
-    Персонажи:
-    - Макс: паникер, КАПС, куча знаков препинания (!!!).
-    - Аня: рассудительная, ставит эмодзи.
-    - Крис: сленг, только маленькие буквы.
-    - Влад: циничные шутки, черный юмор.
-    - Марина: скептик, бесится из-за паники.
-    - Даня: логика, координация.
-
-    Выведи ответ СТРОГО в формате JSON:
-    {
-      "messages": [
-        {"sender": "Имя_Персонажа", "text": "Черновой текст сообщения"}
-      ]
-    }
-    `;
-
-    const PROMPT_DIRECTOR_3 = `
-    Ты — Режиссер №3 (Главный редактор и Стилист Елены Райтман). Ты собираешь всю информацию воедино и наводишь финальный блеск.
-    Твоя задача — сделать диалоги невероятно эмоциональными, кринжовыми или пугающими.
-    Также ты решаешь, наступил ли окончательный финал игры (если turnCount >= 10 или сюжет логически завершился). В случае финала установи "game_over": true и напиши красивое, подкосящее итоги Слово Автора в поле "final_author_word".
-
-    Ты возвращаешь СТРОГО итоговый JSON для игры:
-    {
-      "author_narration": "Финальный, атмосферный текст повествования автора (если есть событие на этом ходу, иначе пусто)",
-      "messages": [
-        {"sender": "Имя_Персонажа", "text": "Отполированный текст сообщения"}
-      ],
-      "game_over": false, // true если это конец игры
-      "final_title": "Название финала (например: ОДИН В ТЕМНОТЕ)", 
-      "final_author_word": "Красивое кинематографичное завершение истории от автора, объясняющее судьбу ребят."
-    }
-    `;
+    // Промпты ИИ
+    const getPrompt1 = () => `Ты Режиссер 1. Сюжет хоррора. В чате 14 друзей. Игрок: ${playerName}. Шаг: ${turnCount}/10. Выдай JSON: { "author_narration": "описание действий", "plot_directive": "план для диалогов" }`;
+    const getPrompt2 = () => `Ты Режиссер 2. Напиши черновик диалогов по директиве. Персонажи: Макс (капс), Аня, Крис, Влад, Марина. Обращаются к ${playerName}. Выдай JSON: { "messages": [ {"sender": "Имя", "text": "Текст"} ] }`;
+    const getPrompt3 = () => `Ты Режиссер 3. Отполируй текст, добавь эмоций. Если шаг ${turnCount}>=10, заверши игру (game_over: true). Выдай JSON: { "author_narration": "событие (если есть)", "messages": [ {"sender": "Имя", "text": "Текст"} ], "game_over": false }`;
 
     let history = [
         { sender: "Макс", text: "Ребята, вы тут? Кажется, у нас проблемы... Кто-нибудь видит свет в заброшке?" }
@@ -408,15 +453,13 @@
     async function sendPlayerMessage() {
         const text = chatInput.value.trim();
         if (!text) return;
-        if (!OPENROUTER_API_KEY) { keyModal.style.display = 'flex'; return; }
 
-        appendMessage("Игрок", text, "player");
+        appendMessage(playerName, text, "player");
         chatInput.value = '';
-        history.push({ sender: "Игрок", text: text });
-        turnCount++; // Приближаем финал
+        history.push({ sender: playerName, text: text });
+        turnCount++; 
 
         if (history.length > 20) history = history.slice(-20);
-
         await runDirectorPipeline();
     }
 
@@ -424,161 +467,105 @@
         try {
             let historyContext = history.map(m => `${m.sender}: ${m.text}`).join("\n");
 
-            // === РЕЖИССЕР 1 ===
-            showTyping("🎬 Пишется сценарий и повествование автора...");
+            showTyping();
+            
             let res1 = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "google/gemini-2.5-flash",
-                    messages: [
-                        { role: "system", content: PROMPT_DIRECTOR_1 },
-                        { role: "user", content: `История чата:\n${historyContext}` }
-                    ],
-                    response_format: { type: "json_object" }
-                })
+                method: "POST", headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "system", content: getPrompt1() }, { role: "user", content: historyContext }], response_format: { type: "json_object" }})
             });
-            let data1 = await res1.json();
-            let d1Json = JSON.parse(data1.choices[0].message.content);
-            let authorNarration = d1Json.author_narration || "";
-            let plotDirective = d1Json.plot_directive || "";
+            let d1 = await res1.json();
+            let p1 = JSON.parse(d1.choices[0].message.content);
 
-            // === РЕЖИССЕР 2 ===
-            showTyping("📝 Режиссер 2 адаптирует диалоги...");
             let res2 = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "google/gemini-2.5-flash",
-                    messages: [
-                        { role: "system", content: PROMPT_DIRECTOR_2 },
-                        { role: "user", content: `Событие автора: ${authorNarration}\nУказание: ${plotDirective}\nЧат:\n${historyContext}` }
-                    ],
-                    response_format: { type: "json_object" }
-                })
+                method: "POST", headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "system", content: getPrompt2() }, { role: "user", content: `Событие: ${p1.author_narration}\nПлан: ${p1.plot_directive}\nЧат:\n${historyContext}` }], response_format: { type: "json_object" }})
             });
-            let data2 = await res2.json();
-            let draftDialogues = data2.choices[0].message.content;
+            let d2 = await res2.json();
 
-            // === РЕЖИССЕР 3 ===
-            showTyping("👁️ Финальная полировка стиля Елены Райтман...");
             let res3 = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "google/gemini-2.5-flash",
-                    messages: [
-                        { role: "system", content: PROMPT_DIRECTOR_3 },
-                        { role: "user", content: `TurnCount: ${turnCount}. Черновик: ${draftDialogues}. Событие автора: ${authorNarration}. Выдай итоговую структуру.` }
-                    ],
-                    response_format: { type: "json_object" }
-                })
+                method: "POST", headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "system", content: getPrompt3() }, { role: "user", content: `Черновик: ${d2.choices[0].message.content}` }], response_format: { type: "json_object" }})
             });
-            let data3 = await res3.json();
+            let d3 = await res3.json();
             hideTyping();
 
-            let finalGameData = JSON.parse(data3.choices[0].message.content);
+            let finalData = JSON.parse(d3.choices[0].message.content);
 
-            // 1. Сначала выводим Слово автора (повествование посреди игры), если оно сгенерировано
-            if (finalGameData.author_narration) {
-                appendAuthorNarration(finalGameData.author_narration);
-                await new Promise(resolve => setTimeout(resolve, 2000));
+            if (finalData.author_narration) {
+                appendAuthorNarration(finalData.author_narration);
+                await new Promise(r => setTimeout(r, 1000));
             }
 
-            // 2. Поочередно выводим сообщения персонажей
-            if (finalGameData.messages && finalGameData.messages.length > 0) {
-                for (let msg of finalGameData.messages) {
-                    showTyping(`${msg.sender} печатает...`);
-                    await new Promise(resolve => setTimeout(resolve, Math.max(1200, msg.text.length * 35)));
+            if (finalData.messages) {
+                for (let msg of finalData.messages) {
+                    showTyping();
+                    await new Promise(r => setTimeout(r, Math.max(1000, msg.text.length * 30)));
                     hideTyping();
-
                     appendMessage(msg.sender, msg.text, "npc");
-                    history.push({ sender: msg.sender, text: msg.text });
+                    history.push(msg);
                 }
             }
-
-            // 3. Если ИИ принял решение закончить игру (ФИНАЛ)
-            if (finalGameData.game_over === true || finalGameData.game_over === "true") {
-                setTimeout(() => {
-                    showFinalScreen(finalGameData.final_title, finalGameData.final_author_word);
-                }, 3000);
+            if (finalData.game_over === true) {
+                appendAuthorNarration("ИГРА ОКОНЧЕНА. Связь потеряна...");
             }
-
         } catch (error) {
-            console.error(error);
             hideTyping();
-            appendMessage("Система", "Произошел сбой в сценарии. Напишите еще раз.", "npc");
+            appendMessage("Система", "Ошибка сети...", "npc");
         }
     }
 
     function appendMessage(sender, text, type) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${type}`;
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = `message-wrapper ${type === 'npc' ? 'incoming' : 'outgoing'}`;
+        
         const now = new Date();
         const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-        let senderClass = 'sender-system';
-        const s = sender.toLowerCase();
-        if (s.includes('макс')) senderClass = 'sender-max';
-        else if (s.includes('аня')) senderClass = 'sender-anya';
-        else if (s.includes('крис')) senderClass = 'sender-kris';
-        else if (s.includes('влад')) senderClass = 'sender-vlad';
-        else if (s.includes('марин')) senderClass = 'sender-marina';
-        else if (s.includes('дан')) senderClass = 'sender-danya';
-
         if (type === 'npc') {
-            msgDiv.innerHTML = `<span class="sender-name ${senderClass}">${sender}</span>${text}<span class="time">${timeStr}</span>`;
+            const color = getColorForName(sender);
+            const initial = sender.charAt(0).toUpperCase();
+            wrapperDiv.innerHTML = `
+                <div class="user-avatar" style="background-color: ${color};">${initial}</div>
+                <div class="message incoming">
+                    <span class="sender-name" style="color: ${color};">${sender}</span>
+                    <div class="message-text">${text}</div>
+                    <div class="time-wrapper">${timeStr}</div>
+                </div>
+            `;
         } else {
-            msgDiv.innerHTML = `${text}<span class="time">${timeStr}</span>`;
+            wrapperDiv.innerHTML = `
+                <div class="message outgoing">
+                    <div class="message-text">${text}</div>
+                    <div class="time-wrapper">
+                        ${timeStr} 
+                        <svg class="checks" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>
+                    </div>
+                </div>
+            `;
         }
-        chatMessages.appendChild(msgDiv);
+        chatMessages.insertBefore(wrapperDiv, typingIndicator);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     function appendAuthorNarration(text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message author-narration';
-        msgDiv.innerText = text;
-        chatMessages.appendChild(msgDiv);
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'message-wrapper system';
+        wrapperDiv.innerHTML = `<div class="message system">${text}</div>`;
+        chatMessages.insertBefore(wrapperDiv, typingIndicator);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function showTyping(text) {
-        typingText.innerText = text;
+    function showTyping() {
         typingIndicator.style.display = 'flex';
+        chatMessages.appendChild(typingIndicator);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     function hideTyping() { typingIndicator.style.display = 'none'; }
 
-    function showFinalScreen(title, text) {
-        finalTitle.innerText = title || "КОНЕЦ ИСТОРИИ";
-        finalText.innerText = text || "Связь пропала окончательно. Повествование завершено.";
-        finalModal.style.display = 'flex';
-    }
-
-    function restartGame() {
-        turnCount = 0;
-        history = [{ sender: "Макс", text: "Ребята, вы тут? Кажется, у нас проблемы... Кто-нибудь видит свет в заброшке?" }];
-        chatMessages.innerHTML = `
-            <div class="message author-narration">
-                История перезапущена. Вы снова подключились к закрытому чату. За окном глухая ночь... Вдруг телефон взрывается от уведомлений.
-            </div>
-            <div class="message npc">
-                <span class="sender-name sender-max">Макс</span>
-                Ребята, вы тут? Кажется, у нас проблемы... Кто-нибудь видит свет в заброшке?
-                <span class="time">01:30</span>
-            </div>
-        `;
-        finalModal.style.display = 'none';
-    }
-
     sendBtn.addEventListener('click', sendPlayerMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendPlayerMessage(); });
-    JSON.loads = function(string) {
-        try { return JSON.parse(string); } 
-        catch(e) { return { "author_narration": "", "messages": [{"sender": "Система", "text": "*Помехи в сети...*"}], "game_over": false }; }
-    }
+    JSON.loads = function(str) { try { return JSON.parse(str); } catch(e) { return {messages:[]}; } };
 </script>
 </body>
 </html>
