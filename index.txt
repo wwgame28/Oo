@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Вылазка 2026 - Telegram Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background-color: #0e1621;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ==================== ЭКРАН ЗАГРУЗКИ ==================== */
+        #loading-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #000;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+        .loading-logo {
+            font-size: 64px;
+            animation: pulse-red 2s infinite;
+            filter: drop-shadow(0 0 20px #ff000088);
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+        .loading-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .loading-subtitle {
+            font-size: 13px;
+            color: #7f91a4;
+            letter-spacing: 1px;
+        }
+        .loading-bar-wrap {
+            width: 200px;
+            height: 3px;
+            background: #17212b;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #c0392b, #e74c3c);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px #e74c3c88;
+        }
+        .loading-text {
+            font-size: 12px;
+            color: #4a5f72;
+            letter-spacing: 0.5px;
+        }
+
+        /* ==================== ГЛИТЧ-ЭФФЕКТ ==================== */
+        @keyframes glitch {
+            0% { clip-path: inset(40% 0 61% 0); transform: translate(-2px, 0); }
+            20% { clip-path: inset(92% 0 1% 0); transform: translate(2px, 0); }
+            40% { clip-path: inset(43% 0 1% 0); transform: translate(1px, 0); }
+            60% { clip-path: inset(25% 0 58% 0); transform: translate(-1px, 0); }
+            80% { clip-path: inset(54% 0 7% 0); transform: translate(2px, 0); }
+            100% { clip-path: inset(58% 0 43% 0); transform: translate(-2px, 0); }
+        }
+        .glitch-active::before,
+        .glitch-active::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            width: 100%;
+        }
+        .glitch-active::before {
+            color: #e74c3c;
+            animation: glitch 0.3s infinite;
+        }
+        .glitch-active::after {
+            color: #3498db;
+            animation: glitch 0.3s 0.1s infinite reverse;
+        }
+
+        /* ==================== ШАПКА ЧАТА ==================== */
+        .chat-header {
+            background-color: #17212b;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            height: 56px;
+            position: relative;
+        }
+        .horror-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #c0392b, #e74c3c, #ff6b6b);
+            box-shadow: 0 0 8px #e74c3c;
+            transition: width 1s ease;
+            width: 0%;
+        }
+
+        .back-btn {
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .back-btn svg { width: 24px; height: 24px; fill: #5eb5f7; }
+
+        .avatar-group {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #e53935, #ab47bc);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+            margin-right: 12px;
+            position: relative;
+        }
+        .avatar-group.danger {
+            animation: avatar-pulse 1.5s infinite;
+        }
+        @keyframes avatar-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(231, 76, 60, 0); }
+        }
+
+        .chat-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .chat-title { font-size: 18px; font-weight: 500; color: #ffffff; line-height: 1.2; }
+        .chat-status { font-size: 13px; color: #7f91a4; line-height: 1.2; margin-top: 2px; transition: color 0.5s; }
+        .chat-status.danger-status { color: #e74c3c; }
+
+        /* Кнопка сохранения */
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .save-btn {
+            background: none; border: none; cursor: pointer; padding: 6px;
+            opacity: 0.6; transition: opacity 0.2s;
+        }
+        .save-btn:hover { opacity: 1; }
+        .save-btn svg { width: 20px; height: 20px; fill: #5eb5f7; }
+        .save-indicator {
+            font-size: 10px;
+            color: #4db6ac;
+            position: absolute;
+            top: 6px; right: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .save-indicator.show { opacity: 1; }
+
+        /* ==================== ИНДИКАТОР УЖАСА ==================== */
+        .horror-meter {
+            background: #17212b;
+            padding: 6px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #1c2d3d;
+        }
+        .horror-label {
+            font-size: 11px;
+            color: #4a5f72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            min-width: 70px;
+        }
+        .horror-track {
+            flex-grow: 1;
+            height: 4px;
+            background: #0e1621;
+            border-radius: 2px;
+            overflow: visible;
+            position: relative;
+        }
+        .horror-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f39c12, #e74c3c);
+            border-radius: 2px;
+            width: 10%;
+            transition: width 0.8s ease, box-shadow 0.8s ease;
+        }
+        .horror-value {
+            font-size: 11px;
+            color: #e74c3c;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        /* Онлайн-счётчик участников */
+        .online-dots {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+        .online-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #4db6ac;
+            transition: background 0.5s, box-shadow 0.5s;
+        }
+        .online-dot.offline { background: #4a5f72; }
+        .online-dot.dead { background: #e74c3c; box-shadow: 0 0 4px #e74c3c88; }
+
+        /* ==================== ЧАТ ==================== */
+        .chat-messages {
+            flex-grow: 1;
+            padding: 15px 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            scroll-behavior: smooth;
+        }
+
+        .message-wrapper {
+            display: flex;
+            width: 100%;
+            margin-bottom: 6px;
+            align-items: flex-end;
+        }
+        .message-wrapper.incoming { justify-content: flex-start; }
+        .message-wrapper.outgoing { justify-content: flex-end; }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-right: 8px;
+            transition: box-shadow 0.5s;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 6px 10px 8px 12px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.3;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .message.incoming {
+            background-color: #182533;
+            color: #ffffff;
+            border-bottom-left-radius: 4px;
+        }
+        .message-wrapper.incoming .message::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: -6px;
+            width: 12px; height: 12px;
+            background-color: #182533;
+            border-bottom-right-radius: 10px;
+            z-index: -1;
+        }
+        .message.outgoing {
+            background-color: #2b5278;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+        .message-wrapper.outgoing .message::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: -6px;
+            width: 12px; height: 12px;
+            background-color: #2b5278;
+            border-bottom-left-radius: 10px;
+            z-index: -1;
+        }
+
+        .sender-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; display: block; }
+        .message-text { display: inline; }
+
+        .time-wrapper {
+            float: right;
+            margin: 6px -4px -4px 10px;
+            font-size: 11px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .message.incoming .time-wrapper { color: #687c8f; }
+        .message.outgoing .time-wrapper { color: #7aa3c6; }
+
+        .checks { width: 16px; height: 16px; fill: #5eb5f7; }
+
+        /* Системное сообщение */
+        .message-wrapper.system { justify-content: center; margin: 10px 0; }
+        .message.system {
+            background-color: rgba(0,0,0,0.25);
+            color: #ffffff;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 14px;
+            text-align: center;
+            max-width: 90%;
+        }
+        .message.system.horror-event {
+            background-color: rgba(192, 57, 43, 0.25);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #ff8a80;
+            animation: system-pulse 2s ease-out;
+        }
+        @keyframes system-pulse {
+            0% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.6); }
+            100% { box-shadow: none; }
+        }
+
+        /* Типинг-индикатор */
+        .typing-indicator {
+            display: none;
+            padding: 8px 12px;
+            align-items: flex-end;
+            margin-bottom: 6px;
+        }
+        .typing-avatar { width: 36px; height: 36px; border-radius: 50%; background: #182533; margin-right: 8px; }
+        .typing-bubble {
+            background-color: #182533;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            height: 36px;
+        }
+        .dot {
+            width: 6px; height: 6px;
+            background-color: #7f91a4;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ==================== ПОЛЕ ВВОДА ==================== */
+        .chat-input-area {
+            background-color: #17212b;
+            padding: 8px 10px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .clip-icon { padding: 8px; cursor: pointer; }
+        .clip-icon svg { width: 24px; height: 24px; fill: #7f91a4; }
+        .chat-input-wrapper {
+            flex-grow: 1;
+            background-color: #17212b;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .chat-input {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            padding: 12px 0;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            max-height: 100px;
+        }
+        .chat-input::placeholder { color: #7f91a4; }
+        .send-btn {
+            background-color: transparent;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .send-btn svg { width: 30px; height: 30px; fill: #5eb5f7; }
+        .send-btn:disabled svg { fill: #4a5f72; }
+
+        /* ==================== МОДАЛЬНЫЕ ОКНА ==================== */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0e1621; z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; padding: 30px;
+        }
+        .modal-overlay h2 { margin-bottom: 8px; font-size: 22px; color: #ffffff; text-align: center; }
+        .modal-overlay p { font-size: 14px; color: #7f91a4; margin-bottom: 20px; text-align: center; line-height: 1.5; }
+        .modal-overlay input {
+            background-color: #17212b; border: 1px solid #2b5278; padding: 14px; border-radius: 8px;
+            color: white; margin-bottom: 15px; outline: none; font-size: 16px; text-align: center; width: 100%;
+        }
+        .modal-overlay button {
+            background-color: #5eb5f7; color: #ffffff; border: none; padding: 14px;
+            border-radius: 8px; font-weight: 500; font-size: 16px; cursor: pointer; text-transform: uppercase; width: 100%;
+        }
+        .modal-logo { font-size: 48px; text-align: center; margin-bottom: 16px; }
+        .modal-save-info {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #4a5f72;
+            text-align: center;
+        }
+
+        .modal-overlay .btn-secondary {
+            background: none; border: 1px solid #2b5278; color: #7f91a4;
+            font-size: 14px; padding: 10px; margin-top: 8px;
+        }
+
+        /* ==================== ЭФФЕКТ ТРЕВОГИ ==================== */
+        .red-vignette {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 5;
+            background: radial-gradient(ellipse at center, transparent 60%, rgba(192,57,43,0.0) 100%);
+            transition: background 1s ease;
+        }
+        .red-vignette.active {
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(192,57,43,0.35) 100%);
+        }
+
+        /* Мигание при критическом событии */
+        @keyframes flash-red {
+            0%, 100% { background-color: #0e1621; }
+            50% { background-color: rgba(192, 57, 43, 0.12); }
+        }
+        .app-container.flash { animation: flash-red 0.3s 3; }
+
+        /* ==================== SCROLL-TO-BOTTOM ==================== */
+        .scroll-btn {
+            position: absolute;
+            bottom: 80px; right: 15px;
+            width: 36px; height: 36px;
+            background: #17212b;
+            border: 1px solid #2b5278;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 20;
+        }
+        .scroll-btn.show { opacity: 1; pointer-events: all; }
+        .scroll-btn svg { width: 20px; height: 20px; fill: #5eb5f7; }
+
+        /* Бейдж непрочитанных */
+        .unread-badge {
+            position: absolute;
+            top: -6px; right: -6px;
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="app-container">
+
+    <!-- КРАСНАЯ ВИНЬЕТКА УЖАСА -->
+    <div class="red-vignette" id="red-vignette"></div>
+
+    <!-- ЭКРАН ЗАГРУЗКИ -->
+    <div id="loading-screen">
+        <div class="loading-logo">🔦</div>
+        <div class="loading-title">Вылазка 2026</div>
+        <div class="loading-subtitle">Восстановление соединения...</div>
+        <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+        <div class="loading-text" id="loading-text">Инициализация...</div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО — НОВАЯ ИГРА / ПРОДОЛЖИТЬ -->
+    <div class="modal-overlay" id="name-modal" style="display:none;">
+        <div class="modal-logo">🔦</div>
+        <h2>Вход в чат</h2>
+        <p>Введите ваше имя. Друзья из чата будут обращаться к вам именно так.</p>
+        <input type="text" id="player-name-input" placeholder="Имя или никнейм..." autocomplete="off">
+        <button id="start-game-btn">Присоединиться</button>
+        <div class="modal-save-info">⚠️ Прогресс сохраняется автоматически</div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО — ПРОДОЛЖИТЬ СОХРАНЁННУЮ ИГРУ -->
+    <div class="modal-overlay" id="continue-modal" style="display:none;">
+        <div class="modal-logo">💾</div>
+        <h2>Найдено сохранение</h2>
+        <p id="save-info-text">Продолжить прерванную игру?</p>
+        <button id="continue-btn">Продолжить</button>
+        <button class="btn-secondary" id="new-game-btn" style="margin-top:10px; padding:12px; border-radius:8px; cursor:pointer; width:100%;">Начать заново</button>
+    </div>
+
+    <!-- ШАПКА ЧАТА -->
+    <div class="chat-header">
+        <div class="horror-bar" id="horror-bar"></div>
+        <div class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+        <div class="avatar-group" id="group-avatar">В</div>
+        <div class="chat-info">
+            <div class="chat-title">Флудичка (14 участников)</div>
+            <div class="chat-status" id="chat-status">11 человек онлайн</div>
+        </div>
+        <div class="header-actions">
+            <button class="save-btn" id="manual-save-btn" title="Сохранить прогресс">
+                <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            </button>
+        </div>
+        <div class="save-indicator" id="save-indicator">✓ Сохранено</div>
+    </div>
+
+    <!-- ШКАЛА УЖАСА + ОНЛАЙН УЧАСТНИКИ -->
+    <div class="horror-meter">
+        <span class="horror-label">📡 Сигнал</span>
+        <div class="horror-track">
+            <div class="horror-fill" id="horror-fill" style="width:10%;"></div>
+        </div>
+        <span class="horror-value" id="horror-value">10%</span>
+    </div>
+
+    <!-- ЧАТ -->
+    <div class="chat-messages" id="chat-messages">
+        <div class="message-wrapper system">
+            <div class="message system">
+                Вы подключились к старому закрытому чату. Пару часов назад друзья ушли в заброшенный бункер. Вдруг телефон начинает разрываться...
+            </div>
+        </div>
+        <div class="message-wrapper incoming">
+            <div class="user-avatar" style="background-color: #e57373;">М</div>
+            <div class="message incoming">
+                <span class="sender-name" style="color: #e57373;">Макс</span>
+                <div class="message-text">Ребята, вы тут? Кажется, у нас проблемы... Кто-нибудь видит свет в заброшке?</div>
+                <div class="time-wrapper">01:30</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ИНДИКАТОР НАБОРА -->
+    <div class="message-wrapper incoming typing-indicator" id="typing-indicator">
+        <div class="typing-avatar"></div>
+        <div class="typing-bubble">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- КНОПКА ПРОКРУТКИ -->
+    <div class="scroll-btn" id="scroll-btn">
+        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+        <div class="unread-badge" id="unread-badge"></div>
+    </div>
+
+    <!-- ВВОД -->
+    <div class="chat-input-area">
+        <div class="clip-icon">
+            <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+        </div>
+        <div class="chat-input-wrapper">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Сообщение..." autocomplete="off">
+        </div>
+        <button class="send-btn" id="send-btn">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+// ============================================================
+//  ВСТАВЬТЕ ВАШ API КЛЮЧ OPENROUTER СЮДА:
+// ============================================================
+const OPENROUTER_API_KEY = "СЮДА_ВСТАВЬТЕ_ВАШ_КЛЮЧ";
+// ============================================================
+
+const SAVE_KEY = 'vylazka_2026_save';
+
+// ==================== СОСТОЯНИЕ ИГРЫ ====================
+let gameState = {
+    playerName: "Игрок",
+    turnCount: 0,
+    horrorLevel: 10,       // 0–100
+    history: [],
+    onlineStatus: [true, true, true, true, true, true, true, true, true, true, true], // 11 из 14
+    gameOver: false,
+    savedAt: null
+};
+
+// ==================== ЭЛЕМЕНТЫ DOM ====================
+const els = {
+    loadingScreen: document.getElementById('loading-screen'),
+    loadingBar: document.getElementById('loading-bar'),
+    loadingText: document.getElementById('loading-text'),
+    nameModal: document.getElementById('name-modal'),
+    continueModal: document.getElementById('continue-modal'),
+    saveInfoText: document.getElementById('save-info-text'),
+    continueBtn: document.getElementById('continue-btn'),
+    newGameBtn: document.getElementById('new-game-btn'),
+    playerNameInput: document.getElementById('player-name-input'),
+    startGameBtn: document.getElementById('start-game-btn'),
+    chatMessages: document.getElementById('chat-messages'),
+    chatInput: document.getElementById('chat-input'),
+    sendBtn: document.getElementById('send-btn'),
+    typingIndicator: document.getElementById('typing-indicator'),
+    chatStatus: document.getElementById('chat-status'),
+    horrorFill: document.getElementById('horror-fill'),
+    horrorValue: document.getElementById('horror-value'),
+    horrorBar: document.getElementById('horror-bar'),
+    groupAvatar: document.getElementById('group-avatar'),
+    redVignette: document.getElementById('red-vignette'),
+    appContainer: document.getElementById('app-container'),
+    saveIndicator: document.getElementById('save-indicator'),
+    manualSaveBtn: document.getElementById('manual-save-btn'),
+    scrollBtn: document.getElementById('scroll-btn'),
+    unreadBadge: document.getElementById('unread-badge'),
+};
+
+// ==================== ЦВЕТА АВАТАРОК ====================
+const avatarColors = ['#e57373','#f06292','#ba68c8','#9575cd','#7986cb','#64b5f6','#4fc3f7','#4dd0e1','#4db6ac','#81c784','#ffb74d','#ff8a65'];
+function getColorForName(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return avatarColors[Math.abs(hash) % avatarColors.length];
+}
+
+// ==================== СОХРАНЕНИЕ / ЗАГРУЗКА ====================
+function saveGame() {
+    try {
+        gameState.savedAt = Date.now();
+        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+        showSaveIndicator();
+    } catch(e) { console.warn('Save failed', e); }
+}
+
+function loadSave() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+}
+
+function clearSave() {
+    localStorage.removeItem(SAVE_KEY);
+}
+
+function showSaveIndicator() {
+    els.saveIndicator.classList.add('show');
+    setTimeout(() => els.saveIndicator.classList.remove('show'), 2000);
+}
+
+// Автосохранение каждые 30 сек
+setInterval(() => { if (!gameState.gameOver && gameState.turnCount > 0) saveGame(); }, 30000);
+
+els.manualSaveBtn.addEventListener('click', () => saveGame());
+
+// ==================== ЗАГРУЗОЧНЫЙ ЭКРАН ====================
+async function runLoadingScreen(hasSave) {
+    const steps = hasSave
+        ? ['Проверка сигнала...', 'Восстановление истории чата...', 'Расшифровка сообщений...', 'Соединение...']
+        : ['Инициализация...', 'Поиск участников...', 'Подключение к серверу...', 'Готово'];
+    
+    for (let i = 0; i < steps.length; i++) {
+        els.loadingText.textContent = steps[i];
+        els.loadingBar.style.width = ((i + 1) / steps.length * 100) + '%';
+        await delay(600);
+    }
+    await delay(400);
+    els.loadingScreen.style.opacity = '0';
+    els.loadingScreen.style.transition = 'opacity 0.5s';
+    await delay(500);
+    els.loadingScreen.style.display = 'none';
+}
+
+// ==================== СТАРТОВЫЙ ПОТОК ====================
+async function init() {
+    const save = loadSave();
+
+    if (save && save.turnCount > 0) {
+        // Есть сохранение
+        await runLoadingScreen(true);
+        const d = new Date(save.savedAt);
+        els.saveInfoText.textContent = `Игрок: ${save.playerName} · Ход: ${save.turnCount}/10 · Сохранено: ${d.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}`;
+        els.continueModal.style.display = 'flex';
+        
+        els.continueBtn.onclick = async () => {
+            els.continueModal.style.display = 'none';
+            await restoreFromSave(save);
+        };
+        els.newGameBtn.onclick = () => {
+            clearSave();
+            els.continueModal.style.display = 'none';
+            els.nameModal.style.display = 'flex';
+        };
+    } else {
+        await runLoadingScreen(false);
+        els.nameModal.style.display = 'flex';
+    }
+}
+
+async function restoreFromSave(save) {
+    Object.assign(gameState, save);
+
+    // Рендерим историю сообщений
+    // Сначала очищаем (оставим только системное приветствие)
+    const msgs = els.chatMessages.querySelectorAll('.message-wrapper');
+    msgs.forEach(m => { if (!m.classList.contains('system') || m === els.typingIndicator) {} });
+    
+    // Перерисовываем из истории
+    for (const msg of gameState.history) {
+        if (msg.type === 'system') {
+            appendAuthorNarration(msg.text, msg.isHorror, true);
+        } else {
+            appendMessage(msg.sender, msg.text, msg.msgType, true);
+        }
+    }
+    updateHorrorUI(gameState.horrorLevel);
+    enableChat();
+}
+
+// ==================== СТАРТ НОВОЙ ИГРЫ ====================
+els.startGameBtn.addEventListener('click', () => {
+    const n = els.playerNameInput.value.trim();
+    if (n) gameState.playerName = n;
+    els.nameModal.style.display = 'none';
+
+    if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY.includes('ВСТАВЬТЕ')) {
+        appendAuthorNarration('⚠️ API ключ не вставлен! Вставьте ключ OpenRouter в строку 7 кода.', false, true);
+    }
+    enableChat();
+});
+
+function enableChat() {
+    els.chatInput.disabled = false;
+    els.sendBtn.disabled = false;
+    els.chatInput.focus();
+}
+
+// ==================== ОТПРАВКА СООБЩЕНИЯ ====================
+async function sendPlayerMessage() {
+    const text = els.chatInput.value.trim();
+    if (!text || gameState.gameOver) return;
+
+    appendMessage(gameState.playerName, text, 'player');
+    els.chatInput.value = '';
+    gameState.history.push({ sender: gameState.playerName, text, msgType: 'player', type: 'msg' });
+    gameState.turnCount++;
+
+    if (gameState.history.length > 24) gameState.history = gameState.history.slice(-24);
+    saveGame();
+
+    await runDirectorPipeline();
+}
+
+// ==================== ПРОМПТЫ ====================
+function getPrompt1() {
+    return `Ты Режиссёр 1 хоррор-игры. В чате 14 друзей застряли в заброшенном бункере.
+Игрок: ${gameState.playerName}. Шаг: ${gameState.turnCount}/10. Уровень ужаса: ${gameState.horrorLevel}/100.
+Учти уровень ужаса — чем выше, тем страшнее события.
+Выдай JSON: { "author_narration": "описание нарастающей атмосферы", "plot_directive": "что должны сказать персонажи", "horror_delta": <число от -5 до +20> }`;
+}
+
+function getPrompt2() {
+    return `Ты Режиссёр 2. Напиши диалоги по директиве.
+Персонажи: Макс (лидер, паникует), Аня (медик, держится), Крис (скептик), Влад (юморит для вида), Марина (пропавшая).
+Игрок: ${gameState.playerName}. Обращайся к нему/ней напрямую.
+Выдай JSON: { "messages": [ {"sender": "Имя", "text": "Текст сообщения"} ] }`;
+}
+
+function getPrompt3() {
+    return `Ты Режиссёр 3. Отполируй диалоги: живые эмоции, реализм, хоррор-атмосфера.
+Шаг ${gameState.turnCount}/10, уровень ужаса ${gameState.horrorLevel}/100.
+Если шаг >= 10 — завершить игру (game_over: true).
+Выдай JSON: { "author_narration": "событие (если есть, иначе null)", "is_horror_event": true/false, "messages": [...], "game_over": false }`;
+}
+
+// ==================== КОНВЕЙЕР РЕЖИССЁРОВ ====================
+async function runDirectorPipeline() {
+    try {
+        const histCtx = gameState.history
+            .filter(m => m.type !== 'system')
+            .slice(-16)
+            .map(m => `${m.sender}: ${m.text}`).join('\n');
+
+        showTyping();
+
+        const call = (systemPrompt, userContent) =>
+            fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'google/gemini-2.5-flash',
+                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userContent }],
+                    response_format: { type: 'json_object' }
+                })
+            }).then(r => r.json()).then(d => JSON.parse(d.choices[0].message.content));
+
+        const p1 = await call(getPrompt1(), histCtx);
+        const p2 = await call(getPrompt2(), `Событие: ${p1.author_narration}\nПлан: ${p1.plot_directive}\nЧат:\n${histCtx}`);
+        const p3 = await call(getPrompt3(), `Черновик: ${JSON.stringify(p2)}`);
+
+        hideTyping();
+
+        // Обновляем уровень ужаса
+        if (p1.horror_delta) {
+            gameState.horrorLevel = Math.min(100, Math.max(0, gameState.horrorLevel + p1.horror_delta));
+        }
+        updateHorrorUI(gameState.horrorLevel);
+
+        // Нарратив
+        if (p3.author_narration) {
+            appendAuthorNarration(p3.author_narration, p3.is_horror_event);
+            gameState.history.push({ type: 'system', text: p3.author_narration, isHorror: p3.is_horror_event });
+            if (p3.is_horror_event) triggerHorrorEffect();
+            await delay(800);
+        }
+
+        // Сообщения НПС
+        if (p3.messages) {
+            for (const msg of p3.messages) {
+                showTyping();
+                await delay(Math.max(900, Math.min(msg.text.length * 25, 3000)));
+                hideTyping();
+                appendMessage(msg.sender, msg.text, 'npc');
+                gameState.history.push({ sender: msg.sender, text: msg.text, msgType: 'npc', type: 'msg' });
+            }
+        }
+
+        if (p3.game_over === true) {
+            gameState.gameOver = true;
+            appendAuthorNarration('📵 ИГРА ОКОНЧЕНА. Связь потеряна навсегда...', true);
+            els.chatInput.disabled = true;
+            els.sendBtn.disabled = true;
+            triggerHorrorEffect(true);
+            clearSave();
+        } else {
+            saveGame();
+        }
+
+    } catch (err) {
+        hideTyping();
+        console.error(err);
+        appendAuthorNarration('⚡ Помехи в сети... сигнал прерван.', false);
+    }
+}
+
+// ==================== РЕНДЕР СООБЩЕНИЙ ====================
+function appendMessage(sender, text, type, silent = false) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `message-wrapper ${type === 'npc' ? 'incoming' : 'outgoing'}`;
+
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    if (type === 'npc') {
+        const color = getColorForName(sender);
+        const init = sender.charAt(0).toUpperCase();
+        wrapper.innerHTML = `
+            <div class="user-avatar" style="background-color:${color};">${init}</div>
+            <div class="message incoming">
+                <span class="sender-name" style="color:${color};">${sender}</span>
+                <div class="message-text">${text}</div>
+                <div class="time-wrapper">${timeStr}</div>
+            </div>`;
+    } else {
+        wrapper.innerHTML = `
+            <div class="message outgoing">
+                <div class="message-text">${text}</div>
+                <div class="time-wrapper">
+                    ${timeStr}
+                    <svg class="checks" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>
+                </div>
+            </div>`;
+    }
+
+    els.chatMessages.insertBefore(wrapper, els.typingIndicator);
+    if (!silent) scrollToBottom();
+    else bumpUnread();
+}
+
+function appendAuthorNarration(text, isHorror = false, silent = false) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'message-wrapper system';
+    wrapper.innerHTML = `<div class="message system ${isHorror ? 'horror-event' : ''}">${text}</div>`;
+    els.chatMessages.insertBefore(wrapper, els.typingIndicator);
+    if (!silent) scrollToBottom();
+    else bumpUnread();
+}
+
+// ==================== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ УЖАСА ====================
+function updateHorrorUI(level) {
+    const pct = level + '%';
+    els.horrorFill.style.width = pct;
+    els.horrorValue.textContent = level + '%';
+    els.horrorBar.style.width = level + '%';
+
+    // Цвет шкалы
+    if (level < 40) {
+        els.horrorFill.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
+        els.horrorFill.style.boxShadow = 'none';
+    } else if (level < 70) {
+        els.horrorFill.style.background = 'linear-gradient(90deg, #e67e22, #e74c3c)';
+        els.horrorFill.style.boxShadow = '0 0 6px rgba(231,76,60,0.4)';
+    } else {
+        els.horrorFill.style.background = 'linear-gradient(90deg, #c0392b, #ff1744)';
+        els.horrorFill.style.boxShadow = '0 0 10px rgba(255,23,68,0.6)';
+    }
+
+    // Виньетка
+    if (level >= 50) {
+        els.redVignette.classList.add('active');
+    } else {
+        els.redVignette.classList.remove('active');
+    }
+
+    // Статус онлайн
+    updateOnlineStatus(level);
+}
+
+function updateOnlineStatus(level) {
+    const onlineCount = Math.max(1, Math.round(11 - (level / 100) * 8));
+    const statusColor = level >= 70 ? 'danger-status' : '';
+    els.chatStatus.className = 'chat-status ' + statusColor;
+    els.chatStatus.textContent = level >= 80 
+        ? `⚠️ ${onlineCount} в сети — сигнал слабый`
+        : level >= 50 
+            ? `${onlineCount} онлайн · есть помехи`
+            : `${onlineCount} человек онлайн`;
+
+    if (level >= 60) els.groupAvatar.classList.add('danger');
+    else els.groupAvatar.classList.remove('danger');
+}
+
+function triggerHorrorEffect(final = false) {
+    els.appContainer.classList.add('flash');
+    setTimeout(() => els.appContainer.classList.remove('flash'), 1000);
+    if (final) {
+        els.redVignette.style.background = 'radial-gradient(ellipse at center, transparent 20%, rgba(192,57,43,0.6) 100%)';
+    }
+}
+
+// ==================== УТИЛИТЫ ====================
+function showTyping() {
+    els.typingIndicator.style.display = 'flex';
+    els.chatMessages.appendChild(els.typingIndicator);
+    scrollToBottom();
+}
+function hideTyping() { els.typingIndicator.style.display = 'none'; }
+
+let unreadCount = 0;
+function bumpUnread() {
+    const isAtBottom = els.chatMessages.scrollHeight - els.chatMessages.scrollTop - els.chatMessages.clientHeight < 100;
+    if (!isAtBottom) {
+        unreadCount++;
+        els.unreadBadge.style.display = 'flex';
+        els.unreadBadge.textContent = unreadCount;
+        els.scrollBtn.classList.add('show');
+    }
+}
+
+function scrollToBottom() {
+    els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+    unreadCount = 0;
+    els.unreadBadge.style.display = 'none';
+    els.scrollBtn.classList.remove('show');
+}
+
+els.chatMessages.addEventListener('scroll', () => {
+    const isAtBottom = els.chatMessages.scrollHeight - els.chatMessages.scrollTop - els.chatMessages.clientHeight < 100;
+    if (isAtBottom) {
+        unreadCount = 0;
+        els.unreadBadge.style.display = 'none';
+        els.scrollBtn.classList.remove('show');
+    } else {
+        els.scrollBtn.classList.add('show');
+    }
+});
+els.scrollBtn.addEventListener('click', scrollToBottom);
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ==================== СОБЫТИЯ ====================
+els.sendBtn.addEventListener('click', sendPlayerMessage);
+els.chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendPlayerMessage(); });
+
+// ==================== ЗАПУСК ====================
+init();
+</script>
+</body>
+</html>
